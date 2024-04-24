@@ -1,13 +1,21 @@
 import scrapy
 from scrapy.http import Response
 
+NUM_RATING = {
+    "One": 1,
+    "Two": 2,
+    "Three": 3,
+    "Four": 4,
+    "Five": 5,
+}
+
 
 class ScrapingBooksSpider(scrapy.Spider):
     name = "scraping_books"
     allowed_domains = ["books.toscrape.com"]
     start_urls = ["https://books.toscrape.com/"]
 
-    def parse(self, response: Response, **kwargs):
+    def parse(self, response: Response, **kwargs) -> None:
 
         books = response.css("h3 a::attr(href)").getall()
         for book in books:
@@ -17,15 +25,7 @@ class ScrapingBooksSpider(scrapy.Spider):
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
 
-    def _parse_book(self, response: Response):
-
-        num_rating = {
-            "One": 1,
-            "Two": 2,
-            "Three": 3,
-            "Four": 4,
-            "Five": 5,
-        }
+    def _parse_book(self, response: Response) -> None:
 
         title = response.css("h1::text").get()
         price = float(response.css(".price_color::text").get().replace("£", ""))
@@ -41,7 +41,7 @@ class ScrapingBooksSpider(scrapy.Spider):
             "title": title,
             "price": price,
             "amount_in_stock": stock,
-            "rating": num_rating[rating],
+            "rating": NUM_RATING[rating],
             "category": category,
             "description": description,
             "upc": upc,
